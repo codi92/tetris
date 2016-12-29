@@ -57,37 +57,37 @@ WHITE=7
 # Location and size of playfield, color of border
 PLAYFIELD_W=10
 PLAYFIELD_H=20
-PLAYFIELD_X=30
-PLAYFIELD_Y=1
+PLAYFIELD_X=3
+PLAYFIELD_Y=2
 BORDER_COLOR=$YELLOW
 
 # Location and color of score information
-SCORE_X=1
+SCORE_X=26
 SCORE_Y=2
 SCORE_COLOR=$GREEN
 
 # Location and color of help information
-HELP_X=58
-HELP_Y=1
+HELP_X=25
+HELP_Y=10
 HELP_COLOR=$CYAN
 
 # Next piece location
-NEXT_X=14
-NEXT_Y=11
+NEXT_X=26
+NEXT_Y=6
 
 # Location of "game over" in the end of the game
-GAMEOVER_X=1
+GAMEOVER_X=3
 GAMEOVER_Y=$((PLAYFIELD_H + 3))
 
-# Intervals after which game level (and game speed) is increased 
+# Intervals after which game level (and game speed) is increased
 LEVEL_UP=20
 
-colors=($RED $GREEN $YELLOW $BLUE $FUCHSIA $CYAN $WHITE)
+colors=($RED $GREEN $BLUE $FUCHSIA $CYAN $WHITE)
 
 use_color=1      # 1 if we use color, 0 if not
-showtime=1       # controller runs while this flag is 1
-empty_cell=" ."  # how we draw empty cell
-filled_cell="[]" # how we draw filled cell
+showtime=1        # controller runs while this flag is 1
+empty_cell=" ."   # how we draw empty cell
+filled_cell="██" # how we draw filled cell
 
 score=0           # score variable initialization
 level=1           # level variable initialization
@@ -165,22 +165,23 @@ update_score() {
     fi
     set_bold
     set_fg $SCORE_COLOR
-    xyprint $SCORE_X $SCORE_Y         "Lines completed: $lines_completed"
-    xyprint $SCORE_X $((SCORE_Y + 1)) "Level:           $level"
-    xyprint $SCORE_X $((SCORE_Y + 2)) "Score:           $score"
+    xyprint $SCORE_X $SCORE_Y         "Lines: $lines_completed"
+    xyprint $SCORE_X $((SCORE_Y + 1)) "Level: $level"
+    xyprint $SCORE_X $((SCORE_Y + 2)) "Score: $score"
     reset_colors
 }
 
 help=(
-"  Use cursor keys"
-"       or"
-"    s: rotate"
-"a: left,  d: right"
-"    space: drop"
-"      q: quit"
-"  c: toggle color"
-"n: toggle show next"
-"h: toggle this help"
+"Use cursor keys"
+" w: rotate, "
+" s: down, "
+" a: left,"
+" d: right"
+" space: drop"
+" q: quit"
+" c: toggle color"
+" n: toggle next"
+" h: toggle help"
 )
 
 help_on=1 # if this flag is 1 help is shown
@@ -214,13 +215,45 @@ toggle_help() {
 # relative coordinates are calculated as follows:
 # x=((cell & 3)); y=((cell >> 2))
 piece_data=(
-"1256"             # square
 "159d4567"         # line
+"159d4567"         # line
+"569a"             # square
+"0145"             # square
+"89ab"             # square
+"abef"             # square
+"2367"             # square
 "45120459"         # s
+"45120459"         # s
+"45120459"         # s
+"45120459"         # s
+"45120459"         # s
+"45120459"         # s
+"01561548"         # z
+"01561548"         # z
+"01561548"         # z
+"01561548"         # z
 "01561548"         # z
 "159a845601592654" # l
 "159804562159a654" # inverted l
+"159a845601592654" # l
+"159804562159a654" # inverted l
+"159a845601592654" # l
+"159804562159a654" # inverted l
+"159a845601592654" # l
+"159804562159a654" # inverted l
 "1456159645694159" # t
+"1456159645694159" # t
+"1456159645694159" # t
+"1456159645694159" # t
+"1456159645694159" # t
+
+# line              2/30 1/15 
+# square            5/30 1/6
+# s                 5/30 1/6
+# z                 5/30 1/6
+# l                 4/30 2/15
+# inverted l        4/30 2/15
+# t                 5/30 1/6
 )
 
 draw_piece() {
@@ -317,23 +350,43 @@ get_random_next() {
 draw_border() {
     local i x1 x2 y
 
-    set_bold
+    #set_bold
     set_fg $BORDER_COLOR
     ((x1 = PLAYFIELD_X - 2))               # 2 here is because border is 2 characters thick
     ((x2 = PLAYFIELD_X + PLAYFIELD_W * 2)) # 2 here is because each cell on play field is 2 characters wide
-    for ((i = 0; i < PLAYFIELD_H + 1; i++)) {
+    for ((i = 0; i < PLAYFIELD_H ; i++)) {
         ((y = i + PLAYFIELD_Y))
-        xyprint $x1 $y "<|"
-        xyprint $x2 $y "|>"
+        xyprint $x1 $y "██"
+        xyprint $x2 $y "██"
+        #xyprint $x1 $y " ║"
+        #xyprint $x2 $y "║ "
     }
 
     ((y = PLAYFIELD_Y + PLAYFIELD_H))
     for ((i = 0; i < PLAYFIELD_W; i++)) {
         ((x1 = i * 2 + PLAYFIELD_X)) # 2 here is because each cell on play field is 2 characters wide
-        xyprint $x1 $y '=='
-        xyprint $x1 $((y + 1)) "\/"
+        #xyprint $x1 $y '══'
+        xyprint $x1 $y '██'
     }
+
+    ((y = PLAYFIELD_Y - 1))
+    for ((i = 0; i < PLAYFIELD_W; i++)){
+        ((x1 = i * 2 + PLAYFIELD_X))
+        #xyprint $x1 $y '══'
+        xyprint $x1 $y '██'
+      }
+    #xyprint 1 1 " ╔"
+    #xyprint 1 22 " ╚"
+    #xyprint 23 1 "╗ "
+    #xyprint 23 22 "╝ "
+
+    xyprint 1 1 "██"
+    xyprint 1 22 "██"
+    xyprint 23 1 "██"
+    xyprint 23 22 "██"
+
     reset_colors
+
 }
 
 redraw_screen() {
@@ -382,8 +435,7 @@ reader() {
     trap '' SIGUSR1   # SIGUSR1 is ignored
     local -u key a='' b='' cmd esc_ch=$'\x1b'
     # commands is associative array, which maps pressed keys to commands, sent to controller
-    declare -A commands=([A]=$ROTATE [C]=$RIGHT [D]=$LEFT
-        [_S]=$ROTATE [_A]=$LEFT [_D]=$RIGHT
+    declare -A commands=([A]=$ROTATE [C]=$RIGHT [D]=$LEFT [_W]=$ROTATE [_A]=$LEFT [_D]=$RIGHT [_S]=$DOWN
         [_]=$DROP [_Q]=$QUIT [_H]=$TOGGLE_HELP [_N]=$TOGGLE_NEXT [_C]=$TOGGLE_COLOR)
 
     while read -s -n 1 key ; do
@@ -539,4 +591,3 @@ stty_g=$(stty -g) # let's save terminal state
 
 show_cursor
 stty $stty_g # let's restore terminal state
-
